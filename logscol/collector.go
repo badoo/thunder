@@ -437,7 +437,10 @@ func Run() {
 
 	log.Println("Reading offsets db")
 	fp, err := os.Open(offsetsDb)
+
 	if err == nil {
+
+		offsetsMutex.Lock()
 
 		offsets = make(map[uint64]int64)
 		jsonDb := make([]*offsetsDbEntry, 0)
@@ -454,11 +457,15 @@ func Run() {
 			}
 		}
 
+		offsetsMutex.Unlock()
+
 		allInodes, err := getAllInodes(sourceDir)
 
 		if err != nil {
 			log.Panicln("Could not get all inodes from ", sourceDir, ": ", err.Error())
 		}
+
+		offsetsMutex.Lock()
 
 		for ino := range offsets {
 			if _, ok := allInodes[ino]; !ok {
@@ -466,6 +473,7 @@ func Run() {
 			}
 		}
 
+		offsetsMutex.Unlock()
 	}
 
 	log.Println("Saving offsets db")
