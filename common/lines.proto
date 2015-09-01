@@ -1,0 +1,8 @@
+package common;
+
+message LogLines {
+    required string FileName = 1;
+    required int64  Offset = 2;
+    required uint64 Inode = 3;
+    repeated string Lines = 4;
+}
