@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -341,19 +340,18 @@ func saveOffsets() {
 	}
 
 	offsetsMutex.Lock()
-	jsonDb := make([]*offsetsDbEntry, 0)
+	jsonDb := make([]*offsetsDbEntry, 0, len(offsets))
+
 	for ino, off := range offsets {
 		jsonDb = append(jsonDb, &offsetsDbEntry{Ino: ino, Off: off})
 	}
-	contents, err := json.Marshal(jsonDb)
+
+	err = json.NewEncoder(fp).Encode(jsonDb)
+
 	offsetsMutex.Unlock()
 
 	if err != nil {
 		log.Fatalln("Could not marshal offsets to JSON: ", err.Error())
-	}
-
-	if _, err = fp.Write(contents); err != nil {
-		log.Fatalln("Could not write contents to tmp file: ", err.Error())
 	}
 
 	if err = fp.Close(); err != nil {
@@ -440,38 +438,34 @@ func Run() {
 	log.Println("Reading offsets db")
 	fp, err := os.Open(offsetsDb)
 	if err == nil {
-		contents, err := ioutil.ReadAll(fp)
+
+		offsets = make(map[uint64]int64)
+		jsonDb := make([]*offsetsDbEntry, 0)
+
+		err = json.NewDecoder(fp).Decode(&jsonDb)
+
 		fp.Close()
 
-		if err == nil {
-			offsetsMutex.Lock()
-			offsets = make(map[uint64]int64)
-			jsonDb := make([]*offsetsDbEntry, 0)
-			err = json.Unmarshal(contents, &jsonDb)
-			if err != nil {
-				log.Println("Could not unmarshal offsets db: ", err.Error())
-			} else {
-				for _, el := range jsonDb {
-					offsets[el.Ino] = el.Off
-				}
-			}
-			offsetsMutex.Unlock()
+		if err != nil {
+			log.Println("Could not unmarshal offsets db: ", err.Error())
 		} else {
-			log.Println("Could not read offsets db: ", err.Error())
+			for _, el := range jsonDb {
+				offsets[el.Ino] = el.Off
+			}
 		}
 
 		allInodes, err := getAllInodes(sourceDir)
+
 		if err != nil {
 			log.Panicln("Could not get all inodes from ", sourceDir, ": ", err.Error())
 		}
 
-		offsetsMutex.Lock()
 		for ino := range offsets {
 			if _, ok := allInodes[ino]; !ok {
 				delete(offsets, ino)
 			}
 		}
-		offsetsMutex.Unlock()
+
 	}
 
 	log.Println("Saving offsets db")
