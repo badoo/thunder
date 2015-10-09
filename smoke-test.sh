@@ -1,7 +1,5 @@
 #!/bin/sh -x
-go build
-
-cp thunder thunder-test
+go build -o thunder-test
 
 rm -rf tmp-source tmp-target offsets.db offsets.db.tmp
 
