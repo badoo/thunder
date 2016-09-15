@@ -1,0 +1,15 @@
+package badoo.phproxyd;
+
+message phproxyd_config {
+    message scripts_t {
+        required string php_bin = 1;
+        required string php_scripts_dir = 2;
+        required string file_stdout_template = 3;
+        required string file_stderr_template = 4;
+        required string mem_stdout_template = 5;
+        required string mem_stderr_template = 6;
+    }
+
+    required scripts_t scripts = 2;
+}
+

@@ -1,0 +1,165 @@
+
+package badoo.phproxyd;
+
+enum request_msgid {
+    REQUEST_RRD = 1;
+    REQUEST_PING = 2;
+    REQUEST_STATS = 3;
+    REQUEST_RUN = 4;
+    REQUEST_CHECK = 5;
+    REQUEST_FREE = 6;
+    REQUEST_TERMINATE = 7;
+	REQUEST_SOFT_RUN = 8;
+    REQUEST_SOFT_CHECK = 9;
+    REQUEST_SOFT_FREE = 10;
+}
+
+enum response_msgid {
+    RESPONSE_GENERIC = 1;
+    RESPONSE_PING = 2;
+    RESPONSE_RRD = 3;
+    RESPONSE_STATS = 4;
+    RESPONSE_CHECK = 5;
+    RESPONSE_SOFT_CHECK = 6;
+    RESPONSE_SOFT_RUN = 7;
+}
+
+enum errno {
+	ERRNO_GENERIC = 1;
+	ERRNO_RUN_FAILED = 2;
+	ERRNO_ALREADY_RUNNING = 3;
+	ERRNO_NOT_FOUND = 4;
+	ERRNO_WORKING = 5;
+	ERRNO_NO_MEMORY = 6;
+	ERRNO_SUCCESS_FINISHED = 7;
+	ERRNO_FAILED_FINISHED = 8;
+	ERRNO_WAIT_FOR_FREE = 9;
+	ERRNO_START_CHILD_FAILED = 10;
+}
+
+enum phproxyd_status_t {
+	STATUS_OK = 1;
+	STATUS_FAILED = 2;
+}
+
+enum store_t {
+	FILES = 1;
+	MEMORY = 2;
+}
+
+message tag_stat_t {
+	required string tag = 1;
+	required uint32 success = 2;
+	required uint32 failed = 3;
+}
+
+message tag_rrd_t {
+	required string tag = 1;
+	required uint64 tm_clean = 2;
+	required uint32 success = 3;
+	required uint32 failed = 4;
+}
+
+message response_generic {
+	required sint32 error_code = 1;
+	optional string error_text = 2;
+}
+
+message request_ping {
+}
+
+message request_rrd {
+    repeated string  tags = 1;
+    required uint32  clean = 2;
+}
+
+message request_stats {
+}
+
+message response_ping {
+    required phproxyd_status_t status = 1;
+}
+
+message response_rrd {
+    required string  vmsize = 1;
+    required uint64  utime_tv_sec = 2;
+    required uint64  utime_tv_usec = 3;
+    required uint64  stime_tv_sec = 4;
+    required uint64  stime_tv_usec = 5;
+    required uint64  commands_cnt = 6;
+    required uint64  failed_commands_cnt = 7;
+
+    repeated tag_rrd_t rrd = 8;
+}
+
+message response_stats {
+    required string  vmsize = 1;
+    required uint64  utime_tv_sec = 2;
+    required uint64  utime_tv_usec = 3;
+    required uint64  stime_tv_sec = 4;
+    required uint64  stime_tv_usec = 5;
+    required uint64  commands_cnt = 6;
+    required uint64  failed_commands_cnt = 7;
+
+    repeated tag_stat_t stats = 8;
+}
+
+message request_run {
+    required string  script = 1;
+    required uint64  hash = 2;
+    required string  tag = 3;
+    optional sint32  force = 4;
+    repeated string  params = 5;
+    optional store_t store = 6 [default = MEMORY];
+	optional bool    free_after_run = 7 [default = true];
+}
+
+message request_soft_run {
+    required string  script = 1;
+    optional uint64  hash = 2;
+    required string  data = 3;
+}
+
+message response_soft_run {
+    optional uint64  hash = 1;
+}
+
+message request_check {
+    required uint64  hash = 2;
+}
+
+message request_soft_check {
+    repeated uint64  hash = 1;
+}
+
+message request_free {
+    required uint64  hash = 2;
+}
+
+message request_soft_free {
+    repeated uint64  hash = 1;
+}
+
+message response_check {
+    required sint32 error_code = 1;
+    optional string error_text = 2;
+    optional string response = 3;
+    optional uint64 utime_tv_sec = 4;
+    optional uint64 utime_tv_usec = 5;
+    optional uint64 stime_tv_sec = 6;
+    optional uint64 stime_tv_usec = 7;
+    optional sint32 retcode = 8;
+}
+
+message soft_check_t {
+    required uint64 hash = 1;
+    required string response = 2;
+}
+
+message response_soft_check {
+    repeated soft_check_t stats = 1;
+}
+
+message request_terminate {
+    required uint64  hash = 1;
+}
