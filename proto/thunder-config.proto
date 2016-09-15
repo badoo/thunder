@@ -30,8 +30,8 @@ message config_t {
 
     message launcher_t {
         required string host_suffix = 1; // should be ":<port>", e.g. ":11100" for devel and ":6443" for production
-        required string base_dir = 2; // should be "/local/www/_scripts/" or "/home/wwwrun/badoo/_scripts/"
-        optional string developer_dir = 3; // if developer dirs are supported, specify it as "/home/%s/badoo/_scripts/"
+        required string base_path = 2; // should be "/local/www/_scripts/run.php" or "/home/wwwrun/badoo/_scripts/run.php"
+        optional string developer_path = 3; // if developer dirs are supported, specify it as "/home/%s/badoo/_scripts/run.php"
         required string rqh_log_file = 4; // path to rqh.out.log
     }
 

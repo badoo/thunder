@@ -714,11 +714,11 @@ func Setup(config common.FullConfig) {
 
 	launcherConf := config.GetLauncher()
 	hostSuffix = launcherConf.GetHostSuffix()
-	baseDir = launcherConf.GetBaseDir()
-	if launcherConf.DeveloperDir != nil {
+	basePath = launcherConf.GetBasePath()
+	if launcherConf.DeveloperPath != nil {
 		haveDeveloper = true
-		developerDir = launcherConf.GetDeveloperDir()
-		log.Printf("We have developer dir: %s", developerDir)
+		developerPath = launcherConf.GetDeveloperPath()
+		log.Printf("We have developer dir: %s", developerPath)
 	}
 
 	log.Printf("Updating hosts")

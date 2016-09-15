@@ -84,9 +84,9 @@ var statusPriority = map[string]int{
 }
 
 var hostSuffix string
-var baseDir string
+var basePath string
 var haveDeveloper bool
-var developerDir string
+var developerPath string
 
 const LAUNCHER_DB_DEBUG = false
 
@@ -242,14 +242,14 @@ const (
 	KILL_ACTION_LOG_SCRIPT_FINISH_RUNNING = "logScriptFinishRunning"
 )
 
-func getScriptsDir(settings *ScriptSettings) string {
+func getScriptPath(settings *ScriptSettings) string {
 	if haveDeveloper && settings.developer.Valid && settings.developer.String != "" {
 		if time.Now().Unix()-settings.created < DEVELOPER_CUSTOM_PATH_TIMEOUT {
-			return fmt.Sprintf(developerDir, filepath.Base(settings.developer.String))
+			return fmt.Sprintf(developerPath, filepath.Base(settings.developer.String))
 		}
 	}
 
-	return baseDir
+	return basePath
 }
 
 func (d *LauncherData) processWaiting() {
@@ -272,7 +272,7 @@ func (d *LauncherData) processWaiting() {
 		row.max_finished_ts.Int64 = row.created.Int64 + int64(row.settings.max_time)
 		row.max_finished_ts.Valid = true
 
-		script := getScriptsDir(row.settings) + "run.php"
+		script := getScriptPath(row.settings)
 
 		params := []string{
 			fmt.Sprintf("--id=%d", row.Id),
@@ -800,7 +800,7 @@ func (d *LauncherData) terminate(row *RunQueueEntry, action string) {
 		}
 
 		d.call(&badoo_phproxyd.RequestRun{
-			Script:       proto.String(getScriptsDir(row.settings) + "run.php"),
+			Script:       proto.String(getScriptPath(row.settings)),
 			Hash:         proto.Uint64(0),
 			Tag:          proto.String(PHPROXY_TAG),
 			Force:        proto.Int32(1),
