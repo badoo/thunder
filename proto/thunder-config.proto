@@ -1,0 +1,40 @@
+package thunder;
+
+message config_t {
+    message mysql_t {
+        required string dsn = 1;
+        required uint32 max_connections = 2;
+    };
+
+    message default_t {
+        // average parasite memory on devel and production servers if we were to guess
+        optional int64 parasite_memory = 1 [default = 838860800];
+
+        // minimum requirements for hosts to be considered alive
+        optional int64 min_memory = 2 [default = 1073741824];
+        optional double min_memory_ratio = 3 [default = 0.01];
+
+        optional double min_idle_cpu = 4 [default = -0.15];
+
+        // average script memory usage in bytes
+        optional int64 max_memory = 5 [default = 52428800];
+        optional double rusage = 6 [default = 0.02];
+    };
+
+    required mysql_t mysql = 1;
+    optional bool exit_with_parent = 2 [default = false];
+    optional uint32 delay = 3 [default = 0];
+    required default_t default = 4;
+    optional int64 cycle_ms = 5 [default = 1000]; // how long to wait between job generation cycles in ms
+    optional int64 full_timetable_reload_interval_ms = 6 [default = 1000]; // how often to fully reload timetable
+
+    message launcher_t {
+        required string host_suffix = 1; // should be ":<port>", e.g. ":11100" for devel and ":6443" for production
+        required string base_dir = 2; // should be "/local/www/_scripts/" or "/home/wwwrun/badoo/_scripts/"
+        optional string developer_dir = 3; // if developer dirs are supported, specify it as "/home/%s/badoo/_scripts/"
+        required string rqh_log_file = 4; // path to rqh.out.log
+    }
+
+    required launcher_t launcher = 7; // settings for launcher
+    required bool is_devel = 8;
+}

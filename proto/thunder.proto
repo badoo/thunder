@@ -1,0 +1,97 @@
+package thunder;
+
+enum request_msgid {
+    REQUEST_ADD_JOBS = 1;
+    REQUEST_UPDATE_STATUS = 2;
+    REQUEST_LOG_FINISH = 3;
+}
+
+enum response_msgid {
+    RESPONSE_GENERIC = 1;
+    RESPONSE_JOB_IDS = 2;
+    RESPONSE_RUN_INFO = 3;
+}
+
+enum errno {
+    ERRNO_GENERIC = 1;
+}
+
+message response_generic {
+    required sint32 error_code = 1;
+    optional string error_text = 2;
+}
+
+message request_heartbeat {
+    required string hostname = 1;
+    required string hostgroup = 2;
+
+    message cpu_t {
+        required float user = 1;
+        required float sys = 2;
+        required float nice = 3;
+        required float iowait = 4;
+        required float steal = 5;
+        required float idle = 6;
+        required float parasite = 7;
+    }
+
+    optional uint32 cpu_parrots_per_core = 3;
+    required uint32 cpu_cores = 4;
+
+    message memory_t {
+        required int64 total = 1;
+        required int64 free = 2;
+        required int64 cached = 3;
+        required int64 buffers = 4;
+        required int64 parasite = 5;
+        required int64 swap_total = 6;
+        required int64 swap_used = 7;
+    }
+
+    optional cpu_t cpu = 5;
+    optional memory_t memory = 6;
+}
+
+message request_phproxyd_heartbeat {
+    required string hostname = 1;
+}
+
+message request_add_jobs {
+    message job_t {
+        optional int64 generation_id = 1;
+        required string class_name = 2;
+        required string job_data = 3;
+        optional string method = 4;
+        optional string location = 5;
+        optional int64 next_launch_ts = 6;
+        message repeat_t {
+            optional int32 value = 1;
+        }
+        optional repeat_t repeat = 7; // if repeat field is set, but repeat.value is not, then it means NULL in DB
+        optional uint64 settings_id = 8;
+    }
+
+    repeated job_t jobs = 1;
+}
+
+message response_job_ids {
+    repeated uint64 job_id = 1;
+}
+
+message request_update_status {
+    required string hostname = 1; // hostname where script is run (required because thunder has no global map of run ids)
+    required uint64 run_id = 2;
+    required string prev_status = 3; // previous run_status that is expected
+    required string status = 4; // new run_status
+}
+
+message request_log_finish {
+    required string hostname = 1;
+    required uint64 run_id = 2;
+    required string prev_status = 3;
+    required bool   success = 4;
+}
+
+message response_run_info {
+    required string info = 1; // json_encode'd row from database table RunQueue
+}
